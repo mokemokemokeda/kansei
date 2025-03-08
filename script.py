@@ -76,7 +76,7 @@ for username in df["username"]:
 new_data = pd.DataFrame([followers_data])
 
 # 記録ファイルの取得と更新
-history_file = "kakunin.xlsx"
+history_file = "priorche_follower_shukei.xlsx"  # ファイル名を変更
 history_id = get_file_id(history_file)
 if history_id:
     file_metadata = drive_service.files().get(fileId=history_id).execute()
@@ -88,19 +88,20 @@ if history_id:
 else:
     history_df = pd.DataFrame()
 
-# 各列にデータを整列
+# 各列にデータを整列（CSVのアカウント列 + 日付）
 df_columns = df["username"].tolist() + ["Date"]
 if history_df.empty:
     history_df = pd.DataFrame(columns=df_columns)
 
+# 新しい行としてデータを追加
 history_df = pd.concat([history_df, new_data], ignore_index=True)
 print("📊 更新後のデータ:")
 print(history_df)
 
-# ExcelファイルをGoogle Driveにアップロード
+# ExcelファイルをGoogle Driveにアップロード（Sheet1に書き出す）
 with io.BytesIO() as fh:
     with pd.ExcelWriter(fh, engine='xlsxwriter') as writer:
-        history_df.to_excel(writer, index=False)
+        history_df.to_excel(writer, index=False, sheet_name="Sheet1")
     fh.seek(0)
     media = MediaIoBaseUpload(fh, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     if history_id:
